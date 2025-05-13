@@ -1,16 +1,22 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GazeInteraction : MonoBehaviour
 {
+    [Header("Deplacement joueur")]
     public float rayLength = 100f;
     public string targetTag = "Target";
     public float moveSpeed = 3.5f;
     public float activationTime = 1.5f;
 
+    [Header("UI")]
+    public GazeUIManager gazeUIManager;
+    public string defaultGazeMessage = "";
+
     private float gazeTimer = 0f;
     private Transform player;
     private bool isMoving = false;
     private Vector3 targetPosition;
+    private GameObject currentTarget = null;
 
     void Start()
     {
@@ -19,52 +25,65 @@ public class GazeInteraction : MonoBehaviour
 
     void Update()
     {
-        Ray ray = new Ray(player.position, player.forward);
+        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
         RaycastHit hit;
-
-        bool isLookingAtTarget = false;
 
         if (Physics.Raycast(ray, out hit, rayLength))
         {
-            if (hit.collider.CompareTag(targetTag))
+            GameObject hitObject = hit.collider.gameObject;
+
+            // Si nouveau regard sur autre objet
+            if (hitObject != currentTarget)
             {
-                isLookingAtTarget = true;
-                gazeTimer += Time.deltaTime;
-
-                // Si on atteint le temps requis, activer le d�placement
-                if (gazeTimer >= activationTime && !isMoving)
-                {
-                    targetPosition = hit.point;
-                    isMoving = true;
-                }
+                currentTarget = hitObject;
+                gazeTimer = 0f;
             }
-        }
 
-        // Si on ne regarde pas l'objet, on reset tout
-        if (!isLookingAtTarget)
-        {
-            gazeTimer = 0f;
+            gazeTimer += Time.deltaTime;
 
-            // Si on n'est plus en train de regarder, on annule le d�placement
-            if (isMoving)
+            // 🔎 Lecture du message à afficher
+            string message = defaultGazeMessage;
+            GazeTarget gazeTarget = hitObject.GetComponent<GazeTarget>();
+            if (gazeTarget != null)
+            {
+                message = gazeTarget.GetFormattedMessage();
+                gazeUIManager?.ShowMessage(message);
+            }
+            else
+            {
+                gazeUIManager?.HideMessage();
+            }
+
+            // ✅ Si regarde un objet "Target", on commence à se déplacer après délai
+            if (hitObject.CompareTag(targetTag) && gazeTimer >= activationTime && !isMoving)
+            {
+                targetPosition = hit.point;
+                isMoving = true;
+            }
+
+            // 🟡 Si on regarde un autre objet qui n’est pas un "Target", on arrête le mouvement
+            if (!hitObject.CompareTag(targetTag))
             {
                 isMoving = false;
             }
+        }
+        else
+        {
+            // 🟡 Si on ne regarde rien : reset
+            currentTarget = null;
+            gazeTimer = 0f;
+            isMoving = false; // 🔴 Arrêt immédiat du déplacement
+            gazeUIManager?.HideMessage();
         }
 
         // Mouvement du joueur
         if (isMoving)
         {
-            Vector3 direction = (targetPosition - player.position).normalized;
-            Vector3 move = direction * moveSpeed * Time.deltaTime;
+            Vector3 direction = (targetPosition - Camera.main.transform.position).normalized;
+            direction.y = 0;
+            Camera.main.transform.parent.position += direction * Time.deltaTime * moveSpeed;
 
-            // D�placement seulement sur l�axe XZ
-            move.y = 0;
-
-            player.parent.transform.position += move;
-
-            // Arr�t si proche
-            if (Vector3.Distance(player.position, targetPosition) < 0.5f)
+            if (Vector3.Distance(Camera.main.transform.position, targetPosition) < 0.5f)
             {
                 isMoving = false;
                 gazeTimer = 0f;
