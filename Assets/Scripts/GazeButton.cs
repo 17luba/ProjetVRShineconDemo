@@ -3,7 +3,7 @@ using UnityEngine.Events;
 
 public class GazeButton : MonoBehaviour
 {
-    public float gazeDuration = 3f;
+    public float gazeDuration = 1.5f;
     public UnityEvent onGazeComplete;
 
     private float timer = 0f;
@@ -33,15 +33,4 @@ public class GazeButton : MonoBehaviour
             }
         }
     }
-
-    void OnPointerEnter()
-    {
-        GetComponent<GazeButton>()?.StartGaze();
-    }
-
-    void OnPointerExit()
-    {
-        GetComponent<GazeButton>()?.StopGaze();
-    }
-
 }

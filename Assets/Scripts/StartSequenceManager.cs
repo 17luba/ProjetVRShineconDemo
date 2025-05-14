@@ -27,5 +27,6 @@ public class StartSequenceManager : MonoBehaviour
     {
         videoPanel.SetActive(false);
         gazeInteraction.enabled = true;
+        startCanvas.SetActive(true);
     }
 }
