@@ -6,7 +6,7 @@ public class GazeInteraction : MonoBehaviour
     public float rayLength = 100f;
     public string targetTag = "Target";
     public float moveSpeed = 3.5f;
-    public float activationTime = 1.5f;
+    public float activationTime = 0f;
 
     [Header("UI")]
     public GazeUIManager gazeUIManager;
