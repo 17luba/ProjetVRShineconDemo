@@ -9,6 +9,8 @@ public class StartSequenceManager : MonoBehaviour
 
     public GazeInteraction gazeInteraction; // le script qui permet d'avancer (désactivé au début)
 
+    private bool isClosingManuelly = false;
+
     void Start()
     {
         videoPanel.SetActive(false);
@@ -27,6 +29,15 @@ public class StartSequenceManager : MonoBehaviour
     {
         videoPanel.SetActive(false);
         gazeInteraction.enabled = true;
+        startCanvas.SetActive(true);
+    }
+
+    public void FermerVideo()
+    {
+        isClosingManuelly = true;
+        videoPlayer.Stop();
+
+        videoPanel.SetActive(false);
         startCanvas.SetActive(true);
     }
 }
